@@ -10,7 +10,8 @@ from bokeh.models import Range1d, HoverTool, BoxSelectTool, PanTool, WheelZoomTo
 from bokeh.models.sources import ColumnDataSource
 from bokeh.client import push_session
 
-db = "../TwitterElection/twitter_election.db"
+#modify the path as needed
+db = "../twitter-election-2016/twitter_election.db"
 
 # modify the logic of tweepy StreamListener:
 # connection re-establish every 1 minutes
@@ -136,6 +137,7 @@ if __name__ == "__main__":
     line1.data_source.data['y1'] = table.Hillary
     line2.data_source.data['x'] = table['timestamp']
     line2.data_source.data['y2'] = table.Trump
+    print table
 
     session = push_session(curdoc())
     session.show(p)

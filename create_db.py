@@ -1,6 +1,6 @@
 import sqlite3
 
-db = "../TwitterElection/twitter_election.db"
+db = "../twitter-election-2016/twitter_election.db"
 
 conn = sqlite3.connect(db)
 c = conn.cursor()
