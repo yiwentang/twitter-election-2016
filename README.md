@@ -13,3 +13,6 @@ This program stores the real time twitter data into Sqlite database. Eevry minut
 
 3. Run 'bokeh serve' in terminal, then run app.py
 
+![bokeh_plot](https://cloud.githubusercontent.com/assets/18508854/19005472/bfc8baca-870f-11e6-8bae-0a833bd898b8.png)
+
+
