@@ -12,10 +12,12 @@ from bokeh.client import push_session
 
 db = "../TwitterElection/twitter_election.db"
 
-
+# modify the logic of tweepy StreamListener:
+# connection re-establish every 1 minutes
+# store text, create time, location, id, sentiment scores into database
 class StreamListener(tweepy.StreamListener):
 
-    def __init__(self, time_limit=900, conn=None):
+    def __init__(self, time_limit=60, conn=None):
         self.start_time = time.time()
         self.limit = time_limit
         self.dbconn = conn
@@ -50,7 +52,8 @@ class StreamListener(tweepy.StreamListener):
         if status_code == 402:
             return False
 
-
+# using the incoming data to compute coverage within 1 minutes window
+# store the results into database
 def update_coverage(t1, t2, conn):
     c = conn.cursor()
     h_cmd = "SELECT COUNT(text) FROM twitter_data WHERE (LOWER(text) LIKE '%hillary%' OR  LOWER(text) LIKE " \
@@ -75,8 +78,8 @@ def update_coverage(t1, t2, conn):
         c.execute(insert_cmd, (t2, 0, 0))
     conn.commit()
 
-
-def get_last_15_coverage(m_str, conn):
+# query the last 60 minutes of coverage data
+def get_last_60_coverage(m_str, conn):
     c = conn.cursor()
     select_cmd = "SELECT * FROM coverage WHERE timestamp >= (SELECT DATETIME('now', ?));"
     try:
@@ -87,6 +90,7 @@ def get_last_15_coverage(m_str, conn):
     df = pd.DataFrame(result, columns=['timestamp', 'Hillary', 'Trump'])
     return df
 
+#bokeh plot
 time_f = '%Y-%m-%d %H:%M:%S'
 tools = [HoverTool(), BoxSelectTool(), PanTool(), WheelZoomTool(), ResetTool(), SaveTool()]
 p = figure(plot_width=900, plot_height=400, tools=tools, x_axis_type='datetime', title='Social Media (Twitter) '
@@ -106,21 +110,17 @@ def event(conn):
     auth.set_access_token(setting.ACCESS_TOKEN, setting.ACCESS_SECRET)
     api = tweepy.API(auth)
 
-    stream_listener = StreamListener(time_limit=900, conn=conn)
+    stream_listener = StreamListener(time_limit=60, conn=conn)
     stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
     stream.filter(track=setting.track_terms, languages=['en'])
     #print "reading finish"
 
     update_coverage(t_start, t_stop, conn)
-    table = get_last_15_coverage("-15 minutes", conn)
+    table = get_last_60_coverage("-60 minutes", conn)
     table['timestamp'] = table.timestamp.astype('datetime64[s]')
     #print table.timestamp, table.Hillary
 
-    # PLOTTING
-
-    # p.line(table['timestamp'], table['Hillary'], color='blue', legend='Hillary')
-    # p.line(table['timestamp'], table['Trump'], color='red', legend='Trump')
-
+    # update the x, y data
     line1.data_source.data['x'] = table['timestamp']
     line1.data_source.data['y1'] = table.Hillary
     line2.data_source.data['x'] = table['timestamp']
@@ -129,7 +129,7 @@ def event(conn):
 
 if __name__ == "__main__":
     conn = sqlite3.connect(db)
-    table = get_last_15_coverage("-15 minutes", conn)
+    table = get_last_60_coverage("-60 minutes", conn)
     # table.columns = ['timestamp', 'Hillary', 'Trump']
     table['timestamp'] = table.timestamp.astype('datetime64[s]')
     line1.data_source.data['x'] = table['timestamp']
