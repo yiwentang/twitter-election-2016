@@ -3,6 +3,8 @@ Follow 2016 Presidential Election Using Twitter Data
 
 Using twttier streaming api to discover how many people are talking about Trump or Hillary
 
+_This repo is for the demonstration purpose on how to collect, store, analyze and visualize data on the fly using Python, SQL, bokeh and twitter API, not necessarily complicated analysis. The analysis is actually very naive_
+
 This program stores the real time twitter data into Sqlite database. Eevry minute, it queries the data in the database and performs analysis. Finally it uses bokeh libaray to visulize the coverage for Trump and Hillary.
 
 0. Install packages in the requirements.txt
